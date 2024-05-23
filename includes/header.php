@@ -25,6 +25,12 @@
   <link rel="stylesheet" href="assets/plugins/daterangepicker/daterangepicker.css">
   <!-- summernote -->
   <link rel="stylesheet" href="assets/plugins/summernote/summernote-bs4.min.css">
+  <style>
+    .profile-img {
+      width: 36px !important;
+      height: 36px !important;
+      object-fit: cover;
+    }
+  </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
-<div class="wrapper">

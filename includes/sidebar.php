@@ -11,10 +11,10 @@
       <!-- Sidebar user panel (optional) -->
       <div class="user-panel mt-3 pb-3 mb-3 d-flex">
         <div class="image">
-          <img src="assets/dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
+          <img src="<?php echo $_SESSION['user_profile'] ?>" class="img-circle profile-img elevation-2" alt="User Image">
         </div>
         <div class="info">
-          <a class="d-block">Alexander Pierce</a>
+          <a class="d-block"><?php echo $_SESSION['user_name'] ?></a>
         </div>
       </div>
 
@@ -38,14 +38,31 @@
               </p>
             </a>
           </li>
+
           <li class="nav-item">
             <a href="#" class="nav-link">
-              <i class="nav-icon fas fa-columns"></i>
+              <i class="nav-icon fas fa-table"></i>
               <p>
                 Recipe
+                <i class="fas fa-angle-left right"></i>
               </p>
             </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="manage-recipe.php" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Manage Recipe</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="recipe-list.php" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Recipe list</p>
+                </a>
+              </li>
+            </ul>
           </li>
+
           <li class="nav-item">
             <a href="logout.php" class="nav-link">
               <i class="nav-icon fas fa-columns"></i>

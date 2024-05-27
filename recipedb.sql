@@ -9,7 +9,7 @@ CREATE TABLE users (
     name VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
-    profile_img MEDIUMBLOB,
+    profile_img VARCHAR(255),
     date DATE DEFAULT NOW(),
     role ENUM('admin', 'chef') NOT NULL
 );
@@ -40,9 +40,17 @@ CREATE TABLE categories (
 CREATE TABLE recipe_categories (
     recipe_id INT NOT NULL,
     category_id INT NOT NULL,
+    published BOOL NOT NULL DEFAULT FALSE,
     PRIMARY KEY (recipe_id, category_id),
     FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+);
+
+CREATE TABLE recipe_image (
+	image_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    image_url VARCHAR(255) NOT NULL,
+    recipe_id INT NOT NULL,
+    FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
 );
 
 INSERT INTO users (name, password, email, role)

@@ -5,8 +5,8 @@ include('./includes/Dbcon.php');
 session_start();
 
 // Check if the recipe ID is provided
-if (isset($_POST['recipe_id'])) {
-    $recipeId = $_POST['recipe_id'];
+if (isset($_GET['recipe_id'])) {
+    $recipeId = $_GET['recipe_id'];
 
     // Create an instance of Dbcon
     $db = new Dbcon();

@@ -19,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors['password'] = "Password is required.";
     }
 
-    $profile = null;
+    $images = null;
     // Validate file upload
     if (isset($_FILES['profile']) && $_FILES['profile']['error'] == 0) {
         $allowed = ['jpg', 'jpeg', 'png'];
@@ -31,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (!in_array($file_ext, $allowed) && ($file_size >= $max_file_size)) {
           $errors['profile'] = "Invalid file type. Allowed types: " . implode(', ', $allowed);
         } else {
-          $profile = file_get_contents($_FILES['profile']['tmp_name']);
+          $images = file_get_contents($_FILES['profile']['tmp_name']);
         }
     }
 
@@ -45,7 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Check if there are any errors
     if (empty($errors)) {
       $db = new Dbcon();
-      if ($db->addUser($name, $password, $email, $role, $profile)) {
+      if ($db->addUser($name, $password, $email, $role, $images)) {
         header('Location: ../users.php');
         unset($db);
       }

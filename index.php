@@ -3,6 +3,9 @@ include('./includes/check-login.php');
 include('./includes/header.php');
 include('./includes/topbar.php');
 include('./includes/sidebar.php');
+
+include('./includes/dbcon.php');
+$db = new Dbcon();
 ?>
 
   <div class="content-wrapper">
@@ -26,14 +29,14 @@ include('./includes/sidebar.php');
             <!-- small box -->
             <div class="small-box bg-info">
               <div class="inner">
-                <h3>150</h3>
+                <h3><?php echo $db->getNumberOfRecipes()?></h3>
 
                 <p>Recipe</p>
               </div>
               <div class="icon">
                 <i class="fas fa-chart-pie"></i>
               </div>
-              <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+              <a href="./manage-recipe.php" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
             </div>
           </div>
           <?php
@@ -42,7 +45,7 @@ include('./includes/sidebar.php');
               <!-- small box -->
               <div class="small-box bg-success">
                 <div class="inner">
-                  <h3>44</h3>
+                  <h3><?php echo $db->getNumberOfUsers()?></h3>
 
                   <p>Users</p>
                 </div>

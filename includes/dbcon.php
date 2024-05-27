@@ -16,6 +16,14 @@ class Dbcon {
         }
     }
 
+    public function userExists($userId) {
+        $sql = "SELECT COUNT(*) FROM users WHERE id = :id";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchColumn() > 0;
+    }
+
     // Users CRUD
     public function addUser($name, $password, $email, $role, $profile) {
         $sql = "INSERT INTO users (name, password, email, role, profile_img) VALUES (:name, :password, :email, :role, :profile_img)";
@@ -110,7 +118,7 @@ class Dbcon {
     // Recipes CRUD
 // Recipes CRUD
 // Recipes CRUD
-    public function addRecipe($title, $description, $ingredients, $instructions, $cookingTime, $servingSize, $userId, $categoryName) {
+    public function addRecipe($title, $description, $ingredients, $instructions, $cookingTime, $servingSize, $userId, $categoryName, $imageUrls) {
         // First, check if the category exists
         $categoryId = $this->getCategoryIdByName($categoryName);
         
@@ -137,6 +145,11 @@ class Dbcon {
 
         // Associate the recipe with the category
         $this->associateRecipeWithCategory($recipeId, $categoryId);
+
+        // Insert images for the recipe
+        foreach ($imageUrls as $imageUrl) {
+            $this->addRecipeImage($imageUrl, $recipeId);
+        }
 
         return true;
     }
@@ -195,8 +208,72 @@ class Dbcon {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function getRecipeList() {
+        $sql = "
+        SELECT 
+            DISTINCT r.id AS recipe_id,
+            r.title,
+            r.description ,
+            r.ingredients,
+            r.instructions,
+            r.cooking_time,
+            r.serving_size,
+            r.special_instructions,
+            c.name AS category_name,
+            ri.image_url AS image_url
+        FROM 
+            recipes r
+        INNER JOIN 
+            users u ON r.user_id = u.id
+        INNER JOIN 
+            recipe_categories rc ON r.id = rc.recipe_id
+        INNER JOIN 
+            categories c ON rc.category_id = c.id
+        LEFT JOIN 
+            recipe_image ri ON r.id = ri.recipe_id;
+        ";
+        
+        // Prepare and execute statement
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+        // Fetch all rows
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $result;
+    }
 
-
+    public function getRecipeByIdWIthImg($id) {
+        $sql = "
+        SELECT 
+            r.id AS recipe_id,
+            r.title,
+            r.description ,
+            r.ingredients,
+            r.instructions,
+            r.cooking_time,
+            r.serving_size,
+            r.special_instructions,
+            c.name AS category_name,
+            ri.image_url AS image_url
+        FROM 
+            recipes r
+        INNER JOIN 
+            users u ON r.user_id = u.id
+        INNER JOIN 
+            recipe_categories rc ON r.id = rc.recipe_id
+        INNER JOIN 
+            categories c ON rc.category_id = c.id
+        LEFT JOIN 
+            recipe_image ri ON r.id = ri.recipe_id
+        WHERE r.id = ? LIMIT 1
+        ";
+        
+        // Prepare and execute statement
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([$id]);
+        // Fetch all rows
+        $result = $stmt->fetch();
+        return $result;
+    }
 
     public function getRecipesByUser($userId) {
         $sql = "SELECT * FROM recipes WHERE user_id = :userId";
@@ -207,7 +284,7 @@ class Dbcon {
     }
 
 
-    public function updateRecipe($id, $title, $description, $ingredients, $instructions, $cookingTime, $servingSize, $specialInstructions, $categoryName) {
+    public function updateRecipe($id, $title, $description, $ingredients, $instructions, $cookingTime, $servingSize, $categoryName) {
         // Prepare the SQL statement for updating the recipe fields
         $sql = "UPDATE recipes SET ";
         $params = [];
@@ -235,10 +312,6 @@ class Dbcon {
         if (!empty($servingSize)) {
             $sql .= "serving_size = :servingSize, ";
             $params[':servingSize'] = $servingSize;
-        }
-        if (!empty($specialInstructions)) {
-            $sql .= "special_instructions = :specialInstructions, ";
-            $params[':specialInstructions'] = $specialInstructions;
         }
 
         // Remove trailing comma and space
@@ -278,6 +351,30 @@ class Dbcon {
         $sql = "DELETE FROM recipes WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindParam(':id', $id);
+        return $stmt->execute();
+    }
+
+    public function getNumberOfUsers() {
+        $sql = "SELECT COUNT(*) AS user_count FROM users";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['user_count'];
+    }
+
+    // Function to get the number of recipes
+    public function getNumberOfRecipes() {
+        $sql = "SELECT COUNT(*) AS recipe_count FROM recipes";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['recipe_count'];
+    }
+    public function addRecipeImage($imageUrl, $recipeId) {
+        $sql = "INSERT INTO recipe_image (image_url, recipe_id) VALUES (:imageUrl, :recipeId)";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':imageUrl', $imageUrl);
+        $stmt->bindParam(':recipeId', $recipeId);
         return $stmt->execute();
     }
 

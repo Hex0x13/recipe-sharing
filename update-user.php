@@ -12,7 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       $password = null;
     }
 
-    $profile = null;
+    $images = null;
     // Validate file upload
     if (isset($_FILES['profile']) && $_FILES['profile']['error'] == 0) {
         $allowed = ['jpg', 'jpeg', 'png'];
@@ -22,9 +22,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $max_file_size = 15 * 1024 * 1024; // 15 MB
 
         if (!in_array($file_ext, $allowed) && ($file_size >= $max_file_size)) {
-          $profile = null;
+          $images = null;
         } else {
-          $profile = file_get_contents($_FILES['profile']['tmp_name']);
+          $images = file_get_contents($_FILES['profile']['tmp_name']);
         }
     }
 
@@ -37,9 +37,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Check if there are any errors
     $db = new Dbcon();
-    if ($db->updateUser($id, $name, $password, $email, $role, $profile)) {
-      if (!empty($profile)) {
-        $_SESSION['user_profile'] = 'data:image/png;base64,' . base64_encode($profile);
+    if ($db->updateUser($id, $name, $password, $email, $role, $images)) {
+      if (!empty($images)) {
+        $_SESSION['user_profile'] = 'data:image/png;base64,' . base64_encode($images);
       } else {
         $_SESSION['user_profile'] = 'assets/dist/img/user2-160x160.jpg';
       }

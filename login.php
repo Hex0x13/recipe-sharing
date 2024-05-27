@@ -57,6 +57,7 @@ if (isset($_SESSION['user_id'])) {
         </p>
         <div class="w-100">
           <button type="submit" class="btn btn-primary btn-block w-100">Login</button>
+          <a href="./recipe-list.php">Browse Recipe</a>
         </div>
 
       </form>

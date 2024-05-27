@@ -1,0 +1,80 @@
+/* General Styles */
+body {
+  font-family: 'Open Sans', sans-serif;
+  background-color: #f8f8f8;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+/* Recipe Details */
+.recipe-details {
+  background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  margin-bottom: 40px;
+}
+
+.recipe-header {
+  margin-bottom: 30px;
+}
+
+.recipe-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.recipe-meta {
+  font-size: 14px;
+  color: #888;
+}
+
+.recipe-meta span {
+  margin-right: 15px;
+}
+
+.recipe-meta span i {
+  margin-right: 5px;
+}
+
+.recipe-content h3 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.recipe-content p {
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.recipe-actions {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.recipe-actions .btn {
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
+/* Utility Classes */
+.btn {
+  display: inline-block;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: #fff;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}

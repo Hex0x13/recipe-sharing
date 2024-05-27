@@ -24,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $_SESSION['user_email'] = $user['email'];
     $_SESSION['user_role'] = $user['role'];
     if (!empty($user['profile_img'])) {
-      $_SESSION['user_profile'] = 'data:image/png;base64,' . base64_encode($user['profile']);
+      $_SESSION['user_profile'] = $user['profile'];
     } else {
       $_SESSION['user_profile'] = 'assets/dist/img/user2-160x160.jpg';
     }

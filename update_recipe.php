@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $category = filter_input(INPUT_POST, 'category', FILTER_SANITIZE_SPECIAL_CHARS);
 
     // Update the recipe in the database
-    $result = $db->updateRecipe($recipeId, $title, $description, $ingredients, $instructions, $cookingTime, $servingSize, $category);
+    $result = $db->updateRecipe($id, $title, $description, $ingredients, $instructions, $cookingTime, $servingSize, $categoryName);
 
     if ($result) {
         $_SESSION['success'] = "Recipe updated successfully.";

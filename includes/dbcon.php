@@ -70,27 +70,28 @@ class Dbcon {
         $sql = "UPDATE users SET ";
         $params = [];
         
-        if (isset($name)) {
+        if (!empty($name)) {
             $sql .= "name = :name, ";
             $params[':name'] = $name;
         }
-        if (isset($password)) {
+        if (!empty($password)) {
             $sql .= "password = :password, ";
             $params[':password'] = $password;
         }
-        if (isset($email)) {
+        if (!empty($email)) {
             $sql .= "email = :email, ";
             $params[':email'] = $email;
         }
-        if (isset($role)) {
+        if (!empty($role)) {
             $sql .= "role = :role, ";
             $params[':role'] = $role;
         }
 
-        if (isset($profile)) {
+        if (!empty($profile)) {
             $sql .= "profile_img = :profile";
             $params[':profile'] = $profile;
-        }       
+            $this->deleteProfileImage($id);
+        }
         // Remove trailing comma and space
         $sql = rtrim($sql, ', ');
         
@@ -103,7 +104,6 @@ class Dbcon {
         foreach ($params as $key => $value) {
             $stmt->bindValue($key, $value);
         }
-        
         return $stmt->execute();
     }
 
@@ -112,13 +112,11 @@ class Dbcon {
         $sql = "DELETE FROM users WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindParam(':id', $id);
+        $this->deleteProfileImage($id);
         return $stmt->execute();
     }
 
-    // Recipes CRUD
-// Recipes CRUD
-// Recipes CRUD
-    public function addRecipe($title, $description, $ingredients, $instructions, $cookingTime, $servingSize, $userId, $categoryName, $imageUrls) {
+    public function addRecipe($title, $description, $ingredients, $instructions, $specialInstructions, $cookingTime, $servingSize, $userId, $categoryName, $imageUrls) {
         // First, check if the category exists
         $categoryId = $this->getCategoryIdByName($categoryName);
         
@@ -128,13 +126,14 @@ class Dbcon {
         }
 
         // Insert the recipe with the retrieved or created category ID
-        $sql = "INSERT INTO recipes (title, description, ingredients, instructions, cooking_time, serving_size, user_id) 
-                VALUES (:title, :description, :ingredients, :instructions, :cookingTime, :servingSize, :userId)";
+        $sql = "INSERT INTO recipes (title, description, ingredients, instructions, special_instructions, cooking_time, serving_size, user_id) 
+                VALUES (:title, :description, :ingredients, :instructions, :special_instructions, :cookingTime, :servingSize, :userId)";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindParam(':title', $title);
         $stmt->bindParam(':description', $description);
         $stmt->bindParam(':ingredients', $ingredients);
         $stmt->bindParam(':instructions', $instructions);
+        $stmt->bindParam(':special_instructions', $specialInstructions);
         $stmt->bindParam(':cookingTime', $cookingTime);
         $stmt->bindParam(':servingSize', $servingSize);
         $stmt->bindParam(':userId', $userId);
@@ -209,29 +208,28 @@ class Dbcon {
     }
 
     public function getRecipeList() {
-        $sql = "
-        SELECT 
-            DISTINCT r.id AS recipe_id,
-            r.title,
-            r.description ,
-            r.ingredients,
-            r.instructions,
-            r.cooking_time,
-            r.serving_size,
-            r.special_instructions,
-            c.name AS category_name,
-            ri.image_url AS image_url
-        FROM 
-            recipes r
-        INNER JOIN 
-            users u ON r.user_id = u.id
-        INNER JOIN 
-            recipe_categories rc ON r.id = rc.recipe_id
-        INNER JOIN 
-            categories c ON rc.category_id = c.id
-        LEFT JOIN 
-            recipe_image ri ON r.id = ri.recipe_id;
-        ";
+        $sql = "SELECT 
+                    DISTINCT r.id AS recipe_id,
+                    r.title,
+                    r.description ,
+                    r.ingredients,
+                    r.instructions,
+                    r.cooking_time,
+                    r.serving_size,
+                    r.special_instructions,
+                    c.name AS category_name,
+                    COALESCE(ri.image_url, './assets/dist/img/no-image.png') AS image_url
+                FROM 
+                    recipes r
+                INNER JOIN 
+                    users u ON r.user_id = u.id
+                INNER JOIN 
+                    recipe_categories rc ON r.id = rc.recipe_id
+                INNER JOIN 
+                    categories c ON rc.category_id = c.id
+                LEFT JOIN 
+                    recipe_image ri ON r.id = ri.recipe_id;
+                ";
         
         // Prepare and execute statement
         $stmt = $this->conn->prepare($sql);
@@ -242,36 +240,35 @@ class Dbcon {
     }
 
     public function getRecipeByIdWIthImg($id) {
-        $sql = "
-        SELECT 
-            r.id AS recipe_id,
-            r.title,
-            r.description ,
-            r.ingredients,
-            r.instructions,
-            r.cooking_time,
-            r.serving_size,
-            r.special_instructions,
-            c.name AS category_name,
-            ri.image_url AS image_url
-        FROM 
-            recipes r
-        INNER JOIN 
-            users u ON r.user_id = u.id
-        INNER JOIN 
-            recipe_categories rc ON r.id = rc.recipe_id
-        INNER JOIN 
-            categories c ON rc.category_id = c.id
-        LEFT JOIN 
-            recipe_image ri ON r.id = ri.recipe_id
-        WHERE r.id = ? LIMIT 1
-        ";
+        $sql = "SELECT 
+                    r.id AS recipe_id,
+                    r.title,
+                    r.description ,
+                    r.ingredients,
+                    r.instructions,
+                    r.cooking_time,
+                    r.serving_size,
+                    r.special_instructions,
+                    c.name AS category_name,
+                    COALESCE(ri.image_url, './assets/dist/img/no-image.png') AS image_url
+                FROM 
+                    recipes r
+                INNER JOIN 
+                    users u ON r.user_id = u.id
+                INNER JOIN 
+                    recipe_categories rc ON r.id = rc.recipe_id
+                INNER JOIN 
+                    categories c ON rc.category_id = c.id
+                LEFT JOIN 
+                    recipe_image ri ON r.id = ri.recipe_id
+                WHERE r.id = ? LIMIT 1
+                ";
         
         // Prepare and execute statement
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$id]);
         // Fetch all rows
-        $result = $stmt->fetch();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result;
     }
 
@@ -284,7 +281,7 @@ class Dbcon {
     }
 
 
-    public function updateRecipe($id, $title, $description, $ingredients, $instructions, $cookingTime, $servingSize, $categoryName) {
+    public function updateRecipe($id, $title, $description, $ingredients, $instructions, $specialInstructions, $cookingTime, $servingSize, $categoryName, $imageUrls) {
         // Prepare the SQL statement for updating the recipe fields
         $sql = "UPDATE recipes SET ";
         $params = [];
@@ -313,6 +310,10 @@ class Dbcon {
             $sql .= "serving_size = :servingSize, ";
             $params[':servingSize'] = $servingSize;
         }
+        if (!empty($specialInstructions)) {
+            $sql .= "special_instructions = :specialInstructions, ";
+            $params[':specialInstructions'] = $specialInstructions;
+        }
 
         // Remove trailing comma and space
         $sql = rtrim($sql, ', ');
@@ -321,15 +322,18 @@ class Dbcon {
         $sql .= " WHERE id = :id";
         $params[':id'] = $id;
 
-        // Prepare and execute the SQL statement to update recipe fields
+        if (!empty($imageUrls)) {
+            $this->deleteRecipeImages($id);
+        }
         $stmt = $this->conn->prepare($sql);
-        
+
         // Bind parameters dynamically
         foreach ($params as $key => $value) {
             $stmt->bindValue($key, $value);
         }
-        
+
         $success = $stmt->execute();
+        $this->removeUnusedCategory();
 
         // Update the category if provided
         if (!empty($categoryName)) {
@@ -342,16 +346,24 @@ class Dbcon {
                 $updateCategoryStmt->execute();
             }
         }
+        // Insert new images for the recipe
+        foreach ($imageUrls as $imageUrl) {
+            $this->addRecipeImage($imageUrl, $id);
+        }
 
         return $success;
     }
+
 
 
     public function deleteRecipe($id) {
         $sql = "DELETE FROM recipes WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindParam(':id', $id);
-        return $stmt->execute();
+        $this->deleteRecipeImages($id);
+        $result = $stmt->execute();
+        $this->removeUnusedCategory();
+        return $result;
     }
 
     public function getNumberOfUsers() {
@@ -378,4 +390,170 @@ class Dbcon {
         return $stmt->execute();
     }
 
+    public function deleteRecipeImages($recipeId) {
+        // First, retrieve the image paths for the given recipe
+        $sql = "SELECT image_url FROM recipe_image WHERE recipe_id = :recipeId";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':recipeId', $recipeId);
+        $stmt->execute();
+        $imagePaths = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        // Delete the image files from the server
+        foreach ($imagePaths as $imagePath) {
+            if (file_exists($imagePath)) {
+                unlink($imagePath);
+            }
+        }
+
+        // Delete the entries from the recipe_image table
+        $sql = "DELETE FROM recipe_image WHERE recipe_id = :recipeId";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':recipeId', $recipeId);
+        return $stmt->execute();
+    }
+
+    function deleteProfileImage($user_id) {
+        $sql = "SELECT profile_img FROM users WHERE id = :id";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':id', $user_id);
+        $stmt->execute();
+        $imagePath = $stmt->fetch()['profile_img'];
+        if (!empty($imagePath) && file_exists($imagePath)) {
+            unlink($imagePath);
+        }
+    }
+
+    function getReviewsByUser($recipe_id, $user_id) {
+        if (!empty($user_id) && $this->userExists($user_id)) {
+            $sql = "SELECT * FROM reviews WHERE recipe_id = :recipe_id AND user_id = :user_id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':recipe_id', $recipe_id); // Bind recipe_id as integer
+            $stmt->bindParam(':user_id', $user_id); // Bind user_id as integer
+            $stmt->execute();
+            $review = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $review;
+        } else {
+            $key = "recipe-sharing-app-user-review-id";
+            $id = filter_input(INPUT_COOKIE, $key, FILTER_VALIDATE_INT);
+            if (isset($id)) {
+                $sql = "SELECT * FROM reviews WHERE id = :id";
+                $stmt = $this->conn->prepare($sql);
+                $stmt->bindParam(':id', $id); // Bind ID as integer
+                $stmt->execute();
+                return $stmt->fetch(PDO::FETCH_ASSOC);
+            } else {
+                return null; // No review found for the user in the cookie
+            }
+        }
+    }
+        
+    function reviewRecipe($rating, $comment, $user_id, $recipe_id) {
+        if (!empty($user_id) && $this->userExists($user_id)) {
+            $sql = "INSERT INTO reviews (recipe_id, user_id, rating, comment) 
+                    VALUES (:recipe_id, :user_id, :rating, :comment)
+                    ON DUPLICATE KEY UPDATE rating = :rating, comment = :comment";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+            $stmt->bindParam(':recipe_id', $recipe_id, PDO::PARAM_INT);
+            $stmt->bindParam(':rating', $rating, PDO::PARAM_INT);
+            $stmt->bindParam(':comment', $comment, PDO::PARAM_STR);
+            $stmt->execute();
+
+        } else {
+            $key = "recipe-sharing-app-user-review-id";
+            $review_id = filter_input(INPUT_COOKIE, $key, FILTER_VALIDATE_INT);
+            $stmt = null;
+            if ($review_id) {
+                $sql = "UPDATE reviews SET rating = :rating, comment = :comment WHERE id = :review_id";
+                $stmt = $this->conn->prepare($sql);
+                $stmt->bindParam(':review_id', $review_id, PDO::PARAM_INT);
+            } else {
+                $sql = "INSERT INTO reviews (recipe_id, user_id, rating, comment) VALUES (:recipe_id, NULL, :rating, :comment)";
+                $stmt = $this->conn->prepare($sql);
+                $stmt->bindParam(':recipe_id', $recipe_id, PDO::PARAM_INT);
+            }
+            $stmt->bindParam(':rating', $rating, PDO::PARAM_INT);
+            $stmt->bindParam(':comment', $comment, PDO::PARAM_STR);
+            $stmt->execute();
+        }
+
+        // Bind parameters and execute SQL statement
+
+        if (empty($user_id) && !$review_id) {
+            // If a new review was inserted, get its ID and save it to the cookie
+            $review_id = $this->conn->lastInsertId();
+            $key = "recipe-sharing-app-user-review-id";
+            setcookie($key, $review_id, time() + (86400 * 30), "/");
+        }
+    }
+
+    function getReviewsByRecipeID($recipe_id) {
+        $sql = "SELECT
+                    rev.rating,
+                    rev.comment,
+                    rev.created_at,
+                    u.name AS user_name,
+                    COALESCE(u.profile_img, './assets/dist/img/no-profile.svg') AS profile_img 
+                FROM
+                    reviews AS rev
+                LEFT JOIN
+                    users AS u
+                ON
+                    rev.user_id = u.id
+                WHERE rev.recipe_id = :recipe_id ORDER BY rev.rating DESC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(":recipe_id", $recipe_id);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    function getReviewsByRecipeFilter($recipe_id, $filter) {
+        $sql = "SELECT
+                    rev.rating,
+                    rev.comment,
+                    rev.created_at,
+                    u.name AS user_name,
+                    COALESCE(u.profile_img, './assets/dist/img/no-profile.svg') AS profile_img 
+                FROM
+                    reviews AS rev
+                LEFT JOIN
+                    users AS u
+                ON
+                    rev.user_id = u.id
+                WHERE rev.recipe_id = :recipe_id AND rev.rating = :filter ORDER BY rev.rating DESC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(":recipe_id", $recipe_id);
+        $stmt->bindParam(":filter", $filter);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    function getCalculateReviewsByRecipe($recipe_id) {
+        $sql = "SELECT 
+                    r.id AS recipe_id,
+                    AVG(rv.rating) AS average_rating,
+                    COUNT(rv.id) AS total_count,
+                    COUNT(CASE WHEN rv.rating = 1 THEN 1 END) AS rating_1_count,
+                    COUNT(CASE WHEN rv.rating = 2 THEN 1 END) AS rating_2_count,
+                    COUNT(CASE WHEN rv.rating = 3 THEN 1 END) AS rating_3_count,
+                    COUNT(CASE WHEN rv.rating = 4 THEN 1 END) AS rating_4_count,
+                    COUNT(CASE WHEN rv.rating = 5 THEN 1 END) AS rating_5_count
+                FROM recipes r
+                LEFT JOIN reviews rv ON r.id = rv.recipe_id
+                WHERE rv.recipe_id = :recipe_id";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(":recipe_id", $recipe_id);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    function removeUnusedCategory() {
+        $sql = "DELETE FROM categories 
+                WHERE id NOT IN (
+                    SELECT DISTINCT category_id 
+                    FROM recipe_categories
+                )";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+    }
 }

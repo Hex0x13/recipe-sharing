@@ -78,3 +78,126 @@ body {
 .btn-secondary:hover {
   background-color: #5a6268;
 }
+
+/* Existing styles */
+
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
+.review.card {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: transform 0.3s ease;
+}
+
+.review.card:hover {
+    transform: translateY(-5px);
+}
+
+.reviews {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.review-header .review-rating {
+  font-size: 1px !important;
+}
+
+.review-header .review-date {
+  font-size: 10px;
+}
+
+.rating-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.rating-summary {
+    text-align: center;
+}
+
+.rating-value {
+    font-size: 48px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.rating-stars i {
+    font-size: 24px;
+}
+
+.total-reviews {
+    font-size: 14px;
+    color: #666;
+}
+
+
+.rating-distribution {
+    max-width: 400px;
+    width: 40vw;
+}
+
+.progress-group {
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.progress-group .progress {
+    border-radius: 12px;
+    background-color: #a9aaac60;
+    margin-bottom: 12px;
+}
+
+.review-number {
+  position: absolute;
+  top: 50%;
+  left: -12px;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+}
+
+.filter-tags > *{
+    font-size: 13px;
+}
+
+.filter-tags > *.active {
+    background-color: #0b89ff;
+    color: #fff !important;
+}
+
+/* .rating-bar {
+    display: flex;
+    align-items: center;
+    width: 200px;
+    height: 20px;
+    background-color: #f2f2f2;
+    border-radius: 10px;
+    margin-bottom: 5px;
+    overflow: hidden;
+}
+
+.rating-bar-item {
+    position: relative;
+    height: 100%;
+}
+
+.rating-bar-value {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background-color: #fbc02d;
+}
+
+.rating-bar-label {
+    position: absolute;
+    right: 10px;
+    font-size: 12px;
+    color: #666;
+} */

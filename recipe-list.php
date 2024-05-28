@@ -10,6 +10,10 @@ $recipes = $db->getRecipeList();
 
 // Fetch distinct categories
 $categories = array_unique(array_column($recipes, 'category_name'));
+$filterCategory = null;
+if (isset($_GET['category'])) {
+    $filterCategory = $_GET['category'];
+}
 ?>
 
 <style>
@@ -58,7 +62,8 @@ body {
 
 .recipe-card-image img {
     width: 100%;
-    height: auto;
+    height: 300px;
+    object-fit: contain;
 }
 
 .recipe-card-body {
@@ -84,6 +89,8 @@ body {
     font-size: 14px;
     line-height: 1.5;
     margin-bottom: 15px;
+    height: 50px;
+    text-overflow: ellipsis;
 }
 
 .recipe-card-meta {
@@ -116,12 +123,6 @@ body {
     transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-.btn-primary {
-    color: #fff;
-    background-color: #007bff;
-    border-color: #007bff;
-}
-
 </style>
 
 
@@ -137,7 +138,7 @@ body {
             <a class="nav-link" data-widget="navbar-search" href="#" role="button">
                 <i class="fas fa-search"></i>
             </a>
-            <div class="navbar-search-block">
+            <div class="navbar-search-block bg-white">
                 <form class="form-inline px-5">
                     <div class="input-group input-group-sm">
                         <input class="form-control form-control-navbar" type="search" placeholder="Search" aria-label="Search">
@@ -148,6 +149,41 @@ body {
                             <button class="btn btn-navbar" type="button" data-widget="navbar-search">
                                 <i class="fas fa-times"></i>
                             </button>
+                        </div>
+                    </div>
+                    <div class="input-group input-group-sm d-flex justify-content-end mt-2">
+                        <div class="input-group-sm d-flex">
+                            <div class="input-group-prepend">
+                                <label class="input-group-text" for="inputGroupSelect01">Type</label>
+                            </div>
+                            <select class="custom-select" id="inputGroupSelect01">
+                                <option selected>Choose...</option>
+                                <option value="1">One</option>
+                                <option value="2">Two</option>
+                                <option value="3">Three</option>
+                            </select>
+                        </div>
+                        <div class="input-group-sm d-flex mx-2">
+                            <div class="input-group-prepend">
+                                <label class="input-group-text" for="inputGroupSelect01">Sort Order</label>
+                            </div>
+                            <select class="custom-select" id="inputGroupSelect01">
+                                <option selected>Choose...</option>
+                                <option value="1">One</option>
+                                <option value="2">Two</option>
+                                <option value="3">Three</option>
+                            </select>
+                        </div>
+                        <div class="input-group-sm d-flex">
+                            <div class="input-group-prepend">
+                                <label class="input-group-text" for="inputGroupSelect01">Order by</label>
+                            </div>
+                            <select class="custom-select" id="inputGroupSelect01">
+                                <option selected>Choose...</option>
+                                <option value="1">One</option>
+                                <option value="2">Two</option>
+                                <option value="3">Three</option>
+                            </select>
                         </div>
                     </div>
                 </form>
@@ -168,9 +204,11 @@ body {
                 <h1 class="page-title">Recipes</h1>
                 <div class="filter-dropdown">
                     <select id="categoryFilter" class="form-control">
-                        <option value="">All Categories</option>
+                        <option value="" <?php if (empty($filterCategory)) echo'selected' ?>>All Categories</option>
                         <?php foreach ($categories as $category) : ?>
-                            <option value="<?php echo $category; ?>"><?php echo $category; ?></option>
+                            <option value="<?php echo $category; ?>" <?php if (!empty($filterCategory) && $filterCategory === $category) echo'selected' ?>>
+                                <?php echo $category ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -180,20 +218,37 @@ body {
 
     <div class="row recipe-list">
         <?php if (!empty($recipes)) : ?>
-            <?php foreach ($recipes as $recipe) : ?>
-                <div class="col-md-6 col-lg-4 mb-4 recipe-card-container" data-category="<?php echo $recipe['category_name']; ?>">
-                    <article class="recipe-card">
-                        <div class="recipe-card-image">
-                            <img src="<?php echo (!empty($recipe))? $recipe['image_url']: "https://via.placeholder.com/400x300.png?text=Recipe+Image"?>" alt="<?php echo $recipe['title']; ?>"
-                            style="height: 300px; object-fit: cover;">
+            <?php foreach ($recipes as $recipe) :
+                if (!empty($filterCategory) && $recipe['category_name'] === $filterCategory) {
+                    continue;
+                }?>
+                <div class="col-md-6 col-lg-4 mb-4 recipe-card-container"  data-category="<?php echo $recipe['category_name']; ?>">
+                    <article class="recipe-card" >
+                        <div class="recipe-card-image bg-secondary">
+                            <img src="<?php echo $recipe['image_url']?>" alt="<?php echo $recipe['title']; ?>">
                         </div>
                         <div class="recipe-card-body">
                             <h2 class="recipe-card-title"><a href="recipe-details.php?id=<?php echo $recipe['recipe_id']; ?>"><?php echo $recipe['title']; ?></a></h2>
                             <p class="recipe-card-description"><?php echo $recipe['description']; ?></p>
                             <div class="recipe-card-meta">
                                 <span class="recipe-category"><i class="fas fa-folder"></i> <?php echo $recipe['category_name']; ?></span>
+                                <span class="recipe-time"><i class="fas fa-clock"></i> <?php echo $recipe['cooking_time']; ?> mins</span>
+                                <span class="recipe-servings"><i class="fas fa-utensils"></i> Serves <?php echo $recipe['serving_size']; ?></span>
                             </div>
-                            <a href="recipe-details.php?id=<?php echo $recipe['recipe_id']; ?>" class="btn btn-secondary">View</a>
+                            <div class="recipe-card-footer d-flex justify-content-between align-items-center">                             
+                                <a href="recipe-details.php?id=<?php echo $recipe['recipe_id']; ?>" class="btn btn-secondary">View</a>
+                                <div class="rating mt-auto">
+                                    <?php $avgRating = number_format($db->getCalculateReviewsByRecipe($recipe['recipe_id'])['average_rating'], 1); ?>
+                                    <span class="text-sm text-gray mr-2"><?php echo $avgRating; ?></span>
+                                    <?php for ($i = 1; $i <= 5; $i++) : ?>
+                                        <?php if ($i < $avgRating):?>
+                                            <i class="fas fa-star text-warning rating-star" data-rating="<?php echo $i; ?>"></i>
+                                        <?php else:?>
+                                            <i class="fas fa-star text-muted rating-star" data-rating="<?php echo $i; ?>"></i>
+                                        <?php endif?>
+                                    <?php endfor; ?>
+                                </div>
+                            </div>
                         </div>
                     </article>
                 </div>
@@ -226,4 +281,15 @@ body {
             }
         });
     });
+
+    const selectCategory = document.getElementById("categoryFilter");
+    function redirectToCategory() {
+        const selectedCategory = selectCategory.value;
+        if (selectedCategory) {
+            window.location.href = "recipe-list.php?category=" + encodeURIComponent(selectedCategory);
+        } else {
+            window.location.href = "recipe-list.php";
+        }
+    }
+    selectCategory.addEventListener('change', redirectToCategory);
 </script>

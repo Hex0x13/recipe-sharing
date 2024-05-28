@@ -25,7 +25,7 @@ foreach ($users as $user) {
       </a>
     </td>
 </tr>
-<?php } ?>
+<?php }?>
 
 <div id="editDataModal" class="modal fade">
   <div class="modal-dialog">

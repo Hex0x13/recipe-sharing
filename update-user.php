@@ -12,7 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       $password = null;
     }
 
-    $images = null;
+    $profile = null;
     // Validate file upload
     if (isset($_FILES['profile']) && $_FILES['profile']['error'] == 0) {
         $allowed = ['jpg', 'jpeg', 'png'];
@@ -22,9 +22,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $max_file_size = 15 * 1024 * 1024; // 15 MB
 
         if (!in_array($file_ext, $allowed) && ($file_size >= $max_file_size)) {
-          $images = null;
+          $errors['profile'] = "Invalid file type. Allowed types: " . implode(', ', $allowed);
         } else {
-          $images = file_get_contents($_FILES['profile']['tmp_name']);
+          $src = $_FILES['profile']['tmp_name'];
+          $profile = './assets/profile/' . uniqid() . $file_name;
+          move_uploaded_file($src, $profile);
         }
     }
 
@@ -37,11 +39,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Check if there are any errors
     $db = new Dbcon();
-    if ($db->updateUser($id, $name, $password, $email, $role, $images)) {
-      if (!empty($images)) {
-        $_SESSION['user_profile'] = 'data:image/png;base64,' . base64_encode($images);
+    if ($user = $db->updateUser($id, $name, $password, $email, $role, $profile)) {
+      $user = $db->getUserById($id);
+      if (!empty($user['profile_img']) && (isset($_SESSION['user_id']) && $_SESSION['user_id'] === $id)) {
+        $_SESSION['user_profile'] = $user['profile_img'];
       } else {
-        $_SESSION['user_profile'] = 'assets/dist/img/user2-160x160.jpg';
+        $_SESSION['user_profile'] = './assets/dist/img/no-profile.svg';
       }
       header('Location: ./users.php');
 

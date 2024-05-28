@@ -24,9 +24,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $_SESSION['user_email'] = $user['email'];
     $_SESSION['user_role'] = $user['role'];
     if (!empty($user['profile_img'])) {
-      $_SESSION['user_profile'] = $user['profile'];
+      $_SESSION['user_profile'] = $user['profile_img'];
     } else {
-      $_SESSION['user_profile'] = 'assets/dist/img/user2-160x160.jpg';
+      $_SESSION['user_profile'] = './assets/dist/img/no-profile.svg';
     }
     header('Location: index.php');
   } else {

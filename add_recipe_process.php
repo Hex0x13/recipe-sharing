@@ -24,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $description = filter_input(INPUT_POST, 'description', FILTER_SANITIZE_SPECIAL_CHARS);
         $ingredients = filter_input(INPUT_POST, 'ingredients', FILTER_SANITIZE_SPECIAL_CHARS);
         $instructions = filter_input(INPUT_POST, 'instructions', FILTER_SANITIZE_SPECIAL_CHARS);
+        $specialInstructions = filter_input(INPUT_POST, 'specialInstructions', FILTER_SANITIZE_SPECIAL_CHARS);
         $cookingTime = filter_input(INPUT_POST, 'cooking_time', FILTER_SANITIZE_SPECIAL_CHARS);
         $servingSize = filter_input(INPUT_POST, 'serving_size', FILTER_SANITIZE_SPECIAL_CHARS);
         $category = filter_input(INPUT_POST, 'category', FILTER_SANITIZE_SPECIAL_CHARS);
@@ -70,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $errors['images'][] = "No files uploaded.";
             }
 
-            $result = $db->addRecipe($title, $description, $ingredients, $instructions, $cookingTime, $servingSize, $userId, $category, $images);
+            $result = $db->addRecipe($title, $description, $ingredients, $specialInstructions, $instructions, $cookingTime, $servingSize, $userId, $category, $images);
             
             if ($result) {
                 $_SESSION['success'] = "Recipe added successfully.";
